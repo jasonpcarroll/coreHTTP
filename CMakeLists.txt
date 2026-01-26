@@ -27,4 +27,4 @@ if(NOT TARGET coremqtt_corehttp_transport_interface)
                              INTERFACE ${HTTP_TRANSPORT_INTERFACE_INCLUDE_DIRS})
 endif()
 
-target_link_libraries(core_http PUBLIC coremqtt_corehttp_transport_interface)
+target_link_libraries(core_http INTERFACE coremqtt_corehttp_transport_interface)
