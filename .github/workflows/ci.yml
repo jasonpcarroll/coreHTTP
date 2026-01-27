@@ -169,6 +169,7 @@ jobs:
         with:
           path: ./
           fail-on-incorrect-version: true
+          exclude-submodules: "test/unit-test/CMock"
 
   proof_ci:
     if: ${{ github.event.pull_request }}
