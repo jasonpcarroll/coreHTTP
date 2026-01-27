@@ -1006,14 +1006,14 @@ static void initializeParsingContextForFirstResponse( HTTPParsingContext_t * pPa
 
     /* Initialize the callbacks that llhttp_execute will invoke. */
     llhttp_settings_init( &( pParsingContext->llhttpSettings ) );
-    pParsingContext->llhttpSettings.on_message_begin = httpParserOnMessageBeginCallback;
-    pParsingContext->llhttpSettings.on_status = httpParserOnStatusCallback;
-    pParsingContext->llhttpSettings.on_status_complete = httpParserOnStatusCompleteCallback;
-    pParsingContext->llhttpSettings.on_header_field = httpParserOnHeaderFieldCallback;
-    pParsingContext->llhttpSettings.on_header_value = httpParserOnHeaderValueCallback;
-    pParsingContext->llhttpSettings.on_headers_complete = httpParserOnHeadersCompleteCallback;
-    pParsingContext->llhttpSettings.on_body = httpParserOnBodyCallback;
-    pParsingContext->llhttpSettings.on_message_complete = httpParserOnMessageCompleteCallback;
+    pParsingContext->llhttpSettings.on_message_begin = &httpParserOnMessageBeginCallback;
+    pParsingContext->llhttpSettings.on_status = &httpParserOnStatusCallback;
+    pParsingContext->llhttpSettings.on_status_complete = &httpParserOnStatusCompleteCallback;
+    pParsingContext->llhttpSettings.on_header_field = &httpParserOnHeaderFieldCallback;
+    pParsingContext->llhttpSettings.on_header_value = &httpParserOnHeaderValueCallback;
+    pParsingContext->llhttpSettings.on_headers_complete = &httpParserOnHeadersCompleteCallback;
+    pParsingContext->llhttpSettings.on_body = &httpParserOnBodyCallback;
+    pParsingContext->llhttpSettings.on_message_complete = &httpParserOnMessageCompleteCallback;
 
     /* Initialize the third-party HTTP parser to parse responses. */
     llhttp_init( &( pParsingContext->llhttpParser ), HTTP_RESPONSE, &( pParsingContext->llhttpSettings ) );
@@ -1829,7 +1829,7 @@ HTTPStatus_t HTTPClient_SendHttpData( const TransportInterface_t * pTransport,
 
     /* If the timestamp function was undefined by the application, then do not
      * retry the transport send. */
-    if( getTimestampMs == getZeroTimestampMs )
+    if( getTimestampMs == &getZeroTimestampMs )
     {
         retryTimeoutMs = 0U;
     }
@@ -2004,7 +2004,7 @@ static HTTPStatus_t getFinalResponseStatus( HTTPParsingState_t parsingState,
     {
         /* HTTP_PARSING_INCOMPLETE is okay when HTTP_RESPONSE_DO_NOT_PARSE_BODY_FLAG is set
          * as the body data may yet to be read from the transport. */
-        if( ( pResponse->respOptionFlags & HTTP_RESPONSE_DO_NOT_PARSE_BODY_FLAG ) == 0 )
+        if( ( pResponse->respOptionFlags & HTTP_RESPONSE_DO_NOT_PARSE_BODY_FLAG ) == 0U )
         {
             if( totalReceived == pResponse->bufferLen )
             {
@@ -2057,7 +2057,7 @@ HTTPStatus_t HTTPClient_ReceiveAndParseHttpResponse( const TransportInterface_t 
 
     /* If the timestamp function was undefined by the application, then do not
      * retry the transport receive. */
-    if( pResponse->getTime == getZeroTimestampMs )
+    if( pResponse->getTime == &getZeroTimestampMs )
     {
         retryTimeoutMs = 0U;
     }
@@ -2286,7 +2286,7 @@ HTTPStatus_t HTTPClient_Send( const TransportInterface_t * pTransport,
         {
             /* Set a zero timestamp function when the application did not configure
              * one. */
-            pResponse->getTime = getZeroTimestampMs;
+            pResponse->getTime = &getZeroTimestampMs;
         }
 
         returnStatus = HTTPSuccess;
@@ -2471,9 +2471,9 @@ static HTTPStatus_t findHeaderInResponse( const uint8_t * pBuffer,
      * need to create a private context in llhttp->data that has the field and
      * value to update and pass back. */
     llhttp_settings_init( &parserSettings );
-    parserSettings.on_header_field = findHeaderFieldParserCallback;
-    parserSettings.on_header_value = findHeaderValueParserCallback;
-    parserSettings.on_headers_complete = findHeaderOnHeaderCompleteCallback;
+    parserSettings.on_header_field = &findHeaderFieldParserCallback;
+    parserSettings.on_header_value = &findHeaderValueParserCallback;
+    parserSettings.on_headers_complete = &findHeaderOnHeaderCompleteCallback;
     llhttp_init( &parser, HTTP_RESPONSE, &parserSettings );
 
     /* Set the context for the parser. */
